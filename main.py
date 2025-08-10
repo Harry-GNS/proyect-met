@@ -1,7 +1,8 @@
 from hgt_map_selector import select_hgt_by_map
-from terrain import process_hgt
 import tkinter as tk
 from tkinter import messagebox
+import multiprocessing as mp
+import sys
 
 def main():
     while True:
@@ -10,7 +11,10 @@ def main():
             print('No se seleccionó ningún archivo.')
             break
         print(f'Archivo seleccionado: {file_path}')
-        process_hgt(file_path)
+        # Procesar usando la lógica optimizada de Mapa3DPrint.py
+        # Ejecutar el script como módulo para asegurar compatibilidad con multiprocessing
+        import subprocess
+        result = subprocess.run([sys.executable, 'Mapa3DPrint.py', file_path])
         root = tk.Tk()
         root.withdraw()
         resp = messagebox.askyesno('Elegir otro archivo', '¿Quieres elegir otro archivo HGT?')
@@ -19,4 +23,5 @@ def main():
             break
 
 if __name__ == '__main__':
+    mp.freeze_support()
     main()

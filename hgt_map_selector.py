@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 from matplotlib.patches import Rectangle
 import geopandas as gpd
 from ecuador_boundary import get_ecuador_geojson
+from preview_generator import generate_hgt_preview, generate_all_previews
 
 # Extrae latitud y longitud del nombre de archivo HGT
 HGT_PATTERN = re.compile(r'([NS])(\d{2})([EW])(\d{3})\.hgt$')
@@ -38,10 +39,14 @@ def select_hgt_by_map(root_dir='Datos'):
     if not hgt_files:
         print('No se encontraron archivos HGT.')
         return None
+    # Generar previews si no existen
+    generate_all_previews(root_dir, 'previews')
     geojson_path = get_ecuador_geojson()
     if geojson_path:
         gdf = gpd.read_file(geojson_path)
-    fig, ax = plt.subplots(figsize=(8, 10))
+    # Mostrar preview general de alturas
+    preview_paths = [generate_hgt_preview(f['path'], 'previews') for f in hgt_files]
+    fig, (ax, ax_preview) = plt.subplots(1, 2, figsize=(14, 8))
     ax.set_title('Selecciona una zona HGT (clic en el cuadro)')
     ax.set_xlabel('Longitud')
     ax.set_ylabel('Latitud')
@@ -60,11 +65,29 @@ def select_hgt_by_map(root_dir='Datos'):
         ax.add_patch(rect)
         rectangles.append((rect, f))
         ax.text(f['lon']+0.5, f['lat']+0.5, f['name'], ha='center', va='center', fontsize=7)
+    # Mostrar preview general (mosaico de previews)
+    ax_preview.set_title('Mapa de calor de alturas (preview)')
+    ax_preview.axis('off')
+    # Mostrar previews individuales en forma de mosaico
+    n = len(preview_paths)
+    for i, img_path in enumerate(preview_paths):
+        img = plt.imread(img_path)
+        x = i % 5
+        y = i // 5
+        ax_preview.imshow(img, extent=[x, x+1, y, y+1], aspect='auto')
     selected = {'file': None}
     def on_click(event):
         for rect, info in rectangles:
             if rect.contains_point((event.x, event.y)):
                 selected['file'] = info['path']
+                # Mostrar preview individual al seleccionar
+                preview_path = generate_hgt_preview(info['path'], 'previews')
+                plt.figure(figsize=(4, 4))
+                plt.title(f'Preview de alturas: {info["name"]}')
+                img = plt.imread(preview_path)
+                plt.imshow(img)
+                plt.axis('off')
+                plt.show()
                 plt.close(fig)
                 break
     fig.canvas.mpl_connect('button_press_event', on_click)

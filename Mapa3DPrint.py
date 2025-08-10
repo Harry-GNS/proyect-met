@@ -3,6 +3,7 @@ import numpy as np
 from scipy.ndimage import gaussian_filter
 import pyvista as pv
 import multiprocessing as mp
+from progress_bar import ProgressBarWindow
 
 # CONFIGURACIÓN DE RENDIMIENTO - Cambia este valor para controlar el uso del CPU
 CPU_USAGE_PERCENT = 75  # Porcentaje del procesador a usar (10-100)

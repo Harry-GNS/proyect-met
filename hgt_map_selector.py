@@ -53,7 +53,15 @@ def select_hgt_by_map(root_dir='Datos'):
     if not hgt_files:
         print('No hay archivos HGT dentro de Ecuador.')
         return None
-    fig, ax = plt.subplots(figsize=(8, 10))
+    fig, ax = plt.subplots(figsize=(16, 9))
+    mng = plt.get_current_fig_manager()
+    try:
+        mng.window.state('zoomed')  # Pantalla completa en Windows
+    except Exception:
+        try:
+            mng.full_screen_toggle()  # Otros sistemas
+        except Exception:
+            pass
     ax.set_title('Selecciona una zona HGT (clic en el cuadro)')
     ax.set_xlabel('Longitud')
     ax.set_ylabel('Latitud')
@@ -77,11 +85,20 @@ def select_hgt_by_map(root_dir='Datos'):
         for rect, info in rectangles:
             if rect.contains_point((event.x, event.y)):
                 selected['file'] = info['path']
-                # Mostrar modelo 3D interactivo en PyVista y mapa de calor como overlay en una esquina
                 import subprocess
                 import sys
                 # Ejecutar Mapa3DPrint.py como script, pasando el archivo seleccionado
                 subprocess.run([sys.executable, 'Mapa3DPrint.py', info['path']])
+                # Mostrar STL generado en pantalla completa
+                import pyvista as pv
+                import os
+                stl_path = os.path.join('previews', f'{info["name"].replace(".hgt", "_solido.stl")}')
+                if os.path.exists(stl_path):
+                    mesh_stl = pv.read(stl_path)
+                    plotter = pv.Plotter(window_size=[1920, 1080])
+                    plotter.add_mesh(mesh_stl, cmap='terrain', show_edges=False, lighting=True)
+                    plotter.set_scale(zscale=1.0)
+                    plotter.show(title=f'Mosaico STL: {info["name"]}', full_screen=True)
                 plt.close(fig)
                 break
     fig.canvas.mpl_connect('button_press_event', on_click)

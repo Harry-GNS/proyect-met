@@ -7,4 +7,7 @@ ademas toca  mejorar la estructura del git por carpetas y definir un lugar donde
 ademas tambien miren y hagan pruebas haber si hay un error o si algo puede mejorar tipo interfaz metodos o
 algo asi escriban en el grupo para ver q tal
 dar
+ ademas falta agregar dos cuadros de apajo q olvide descargar,solo toca ponerles en la carpeta de datos 
+
+
 Donde no lean esto les puneteo

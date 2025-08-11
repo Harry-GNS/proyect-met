@@ -1,0 +1,13 @@
+Para que lean esto y no pregunten que hayq q hacer pq en mi casa ya mismo se va la luz no bait :(
+
+lo que toca hacer es mejorar el flujo ya que al dar click si se genera pero se queda abierto el mapa principal,
+lo que debe pasar es debe cerrarse que aparesca alguna barra de  carga y luego se muestre el 3d
+toca mejorar la interfaz q se pueda regresar al menu principal y asi 
+ademas toca  mejorar la estructura del git por carpetas y definir un lugar donde se guarden los stl y abrirse
+ademas tambien miren y hagan pruebas haber si hay un error o si algo puede mejorar tipo interfaz metodos o
+algo asi escriban en el grupo para ver q tal
+dar
+ ademas falta agregar dos cuadros de apajo q olvide descargar,solo toca ponerles en la carpeta de datos 
+
+
+Donde no lean esto les puneteo

@@ -1,8 +1,0 @@
-numpy
-matplotlib
-pyvista
-scipy
-geopandas
-Pillow
-tkinter
-tqdm

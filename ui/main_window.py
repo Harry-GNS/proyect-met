@@ -1,5 +1,6 @@
 from PyQt6.QtWidgets import (QMainWindow, QWidget, QVBoxLayout, QPushButton, QFileDialog,
-                         QStackedWidget, QMessageBox, QLabel, QHBoxLayout, QDialog)
+                         QStackedWidget, QMessageBox, QLabel, QHBoxLayout, QDialog,
+                         QRadioButton, QGroupBox)
 from PyQt6.QtCore import Qt, QTimer
 from PyQt6.QtGui import QIcon, QPixmap
 from ui.map_selector_widget import MapSelectorWidget
@@ -227,20 +228,94 @@ class MainWindow(QMainWindow):
         self.stack.setCurrentWidget(self.viewer_page)
 
     def _generate_full_map(self):
-        # Método para generar todo el mapa de Ecuador
-        # 1. Volver al menú principal y mostrar progreso
-        self.stack.setCurrentWidget(self.menu_page)
+        # Crear un diálogo para seleccionar opciones
+        options_dialog = QDialog(self)
+        options_dialog.setWindowTitle("Opciones de Generación de Mapa")
+        options_dialog.setMinimumWidth(400)
 
-        # 2. Mostrar diálogo de progreso para la generación del mapa
-        self.progress_dlg = ProgressDialog("Generando mapa 3D de Ecuador...")
-        self.progress_dlg.setWindowTitle("Generando mapa 3D de Ecuador")
-        self.progress_dlg.show()
+        layout = QVBoxLayout(options_dialog)
 
-        # 3. Iniciar worker en segundo plano para la generación del mapa
-        self.worker = STLWorker(generate_full_map=True)
-        self.worker.progress.connect(self.progress_dlg.update_progress)
-        self.worker.finished.connect(self._on_full_map_generation_finished)
-        self.worker.start()
+        # Título
+        title = QLabel("Selecciona las opciones para generar el mapa:")
+        title.setStyleSheet("font-size: 14pt; font-weight: bold; margin-bottom: 15px;")
+        layout.addWidget(title)
+
+        # Opciones de área
+        area_group = QGroupBox("Área a generar:")
+        area_layout = QVBoxLayout()
+
+        ecuador_radio = QRadioButton("Solo Ecuador (más rápido)")
+        ecuador_radio.setChecked(True)
+        all_radio = QRadioButton("Todos los archivos HGT disponibles")
+
+        area_layout.addWidget(ecuador_radio)
+        area_layout.addWidget(all_radio)
+        area_group.setLayout(area_layout)
+
+        # Opciones de resolución
+        resolution_group = QGroupBox("Resolución:")
+        resolution_layout = QVBoxLayout()
+
+        low_radio = QRadioButton("Baja (más rápido, archivo pequeño)")
+        medium_radio = QRadioButton("Media (equilibrado)")
+        high_radio = QRadioButton("Alta (más detalle, archivo grande)")
+
+        medium_radio.setChecked(True)
+
+        resolution_layout.addWidget(low_radio)
+        resolution_layout.addWidget(medium_radio)
+        resolution_layout.addWidget(high_radio)
+        resolution_group.setLayout(resolution_layout)
+
+        # Botones
+        buttons = QHBoxLayout()
+        cancel_btn = QPushButton("Cancelar")
+        generate_btn = QPushButton("Generar")
+        generate_btn.setStyleSheet("background-color: #27ae60; color: white; font-weight: bold;")
+
+        buttons.addWidget(cancel_btn)
+        buttons.addWidget(generate_btn)
+
+        # Añadir todo al layout principal
+        layout.addWidget(area_group)
+        layout.addWidget(resolution_group)
+        layout.addLayout(buttons)
+
+        # Conexiones
+        cancel_btn.clicked.connect(options_dialog.reject)
+        generate_btn.clicked.connect(options_dialog.accept)
+
+        # Mostrar diálogo
+        if options_dialog.exec() == QDialog.DialogCode.Accepted:
+            # Obtener opciones seleccionadas
+            only_ecuador = ecuador_radio.isChecked()
+
+            if low_radio.isChecked():
+                resolution = "low"
+            elif high_radio.isChecked():
+                resolution = "high"
+            else:
+                resolution = "medium"
+
+            # 1. Volver al menú principal y mostrar progreso
+            self.stack.setCurrentWidget(self.menu_page)
+
+            # 2. Mostrar diálogo de progreso para la generación del mapa
+            area_text = "Ecuador" if only_ecuador else "todos los archivos HGT"
+            title_text = f"Generando mapa 3D de {area_text}"
+
+            self.progress_dlg = ProgressDialog(title_text)
+            self.progress_dlg.setWindowTitle(title_text)
+            self.progress_dlg.show()
+
+            # 3. Iniciar worker en segundo plano para la generación del mapa
+            self.worker = STLWorker(generate_full_map=True, only_ecuador=only_ecuador, resolution=resolution)
+            self.worker.progress.connect(self.progress_dlg.update_progress)
+            self.worker.finished.connect(self._on_full_map_generation_finished)
+            self.worker.start()
+        else:
+            # Cancelado
+            return
 
     def _on_full_map_generation_finished(self, success: bool, stl_path: str, err: str):
         if self.progress_dlg:
@@ -261,4 +336,3 @@ class MainWindow(QMainWindow):
         # 4. Mostrar modelo 3D del mapa generado
         self.viewer_page.load_stl(stl_path)
         self.stack.setCurrentWidget(self.viewer_page)
-

@@ -102,6 +102,7 @@ class MainWindow(QMainWindow):
         # Conexiones de botones
         self.btn_map.clicked.connect(self._go_map)
         self.btn_full_map.clicked.connect(self._generate_full_map)
+        self.btn_full_map.hide()
         self.btn_open_stl.clicked.connect(self._open_stl)
         self.btn_settings.clicked.connect(self._settings)
         self.btn_exit.clicked.connect(self.close)
